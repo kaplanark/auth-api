@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    isVeryfied: {
-        type: Boolean,
-        default: false,
-    },
     name: {
         type: String,
         required: true,
@@ -27,8 +23,17 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    token: {
+    role: {
         type: String,
+        default: "user",
+    },
+    isVeryfied: {
+        type: Boolean,
+        default: false,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
     },
 });
 

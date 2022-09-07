@@ -1,30 +1,9 @@
 const User = require('../models/user');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-dotenv.config();
-
-const signIn = async (req, res) => {
+const getUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        const user = await User.findById(req.userId, { password: 0 });
         if (user) {
-            const isPasswordValid = bcrypt.compareSync(password, user.password);
-            if (isPasswordValid) {
-                const token = jwt.sign(
-                    {
-                        userId: user.id,
-                        email: user.email,
-                    },
-                    process.env.SECRET_KEY,
-                    {
-                        expiresIn: '86400000',
-                    }
-                );
-                token && res.status(200).send({ userData: user, accessToken: token });
-            } else {
-                res.status(400).send({ message: 'Invalid password' });
-            }
+            res.status(201).send({ userData: user });
         } else {
             res.status(400).send({ message: 'User not found' });
         }
@@ -35,33 +14,31 @@ const signIn = async (req, res) => {
     }
 };
 
-const signUp = async (req, res) => {
+const updateUser = async (req, res) => {
     try {
-        const { name, surname, username, email, password } = req.body;
-        const user = await User.findOne({ email });
+        const { name, surname, username, email } = req.body;
+        const user = await User.findById(req.userId);
         if (user) {
-            res.status(400).send({ message: 'User already exists' });
+            await User.updateOne({ _id: req.userId }, { name, surname, username, email });
+            res.status(201).send({ message: 'User updated' });
         } else {
-            const hashedPassword = bcrypt.hashSync(password, 10);
-            const newUser = new User({
-                name,
-                surname,
-                username,
-                email: email.toLowerCase(),
-                password: hashedPassword,
-            });
-            await newUser.save();
-            const token = jwt.sign(
-                {
-                    userId: newUser.id,
-                    email: newUser.email,
-                },
-                process.env.SECRET_KEY,
-                {
-                    expiresIn: '86400000',
-                }
-            );
-            token && res.status(200).send({ message: 'Create new user', accessToken: token });
+            res.status(400).send({ message: 'User not found' });
+        }
+    }
+    catch (error) {
+        res.status(500).send({ message: 'Something went wrong' });
+        console.log(error);
+    }
+};
+
+const deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (user) {
+            await User.deleteOne({ _id: req.userId });
+            res.status(201).send({ message: 'User deleted' });
+        } else {
+            res.status(400).send({ message: 'User not found' });
         }
     }
     catch (error) {
@@ -71,6 +48,7 @@ const signUp = async (req, res) => {
 };
 
 module.exports = {
-    signIn,
-    signUp,
+    getUser,
+    updateUser,
+    deleteUser,
 };

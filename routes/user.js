@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { signIn, signUp } = require("../controller/user");
+const { getUser, updateUser, deleteUser } = require("../controller/user");
+const verifyToken = require("../middleware/auth");
 
-router.post("/api/auth/signin", signIn);
-router.post("/api/auth/signup", signUp);
+router.get("/api/user", verifyToken, getUser);
+router.put("/api/user", verifyToken, updateUser);
+router.delete("/api/user", verifyToken, deleteUser);
 
 module.exports = router;

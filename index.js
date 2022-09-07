@@ -12,7 +12,9 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 
+const auth = require('./routes/auth');
 const user = require('./routes/user');
+app.use(auth);
 app.use(user);
 
 
@@ -28,10 +30,6 @@ app.use(function (req, res, next) {
 require('./config/database').connect();
 app.listen(PORT, function () {
     console.log('Server is running on Port: 5000');
-});
-
-app.get('/api', (req, res) => {
-    res.json({ message: 'api is runing' });
 });
 
 
